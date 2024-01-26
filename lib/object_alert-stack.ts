@@ -8,14 +8,13 @@ export class ObjectAlertStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    const s3bucket = new cdk.aws_s3.Bucket(this, 'objectalerts3');
-
     const snsObjectAlert = new cdk.aws_sns.Topic(this, 'objectalertid')
 
     const emailParam = new cdk.CfnParameter(this, 'subemail', {
       minLength: 10,
       maxLength: 50,
-      type: 'String'
+      type: 'String',
+      default: 'sp.aditya@gmail.com'
     })
     const emailAddress = new cdk.aws_sns_subscriptions.EmailSubscription(emailParam.valueAsString)
 
@@ -34,19 +33,10 @@ export class ObjectAlertStack extends cdk.Stack {
     })
     alertLambda.addToRolePolicy(snsPolicy);
 
-    // const eventarray = [EventType.OBJECT_CREATED, EventType.OBJECT_REMOVED]
-
-    // eventarray.forEach(element => {
-    //   s3bucket.addEventNotification(element, new LambdaDestination(alertLambda))
-    // });
-
-    // for (let index = 0; index < eventarray.length; index++) {
-    //   const element = eventarray[index];
-    //   s3bucket.addEventNotification(element, new LambdaDestination(alertLambda))
-    // }
-
-    s3bucket.addEventNotification(EventType.OBJECT_CREATED, new cdk.aws_s3_notifications.LambdaDestination(alertLambda))
-    s3bucket.addEventNotification(EventType.OBJECT_REMOVED, new cdk.aws_s3_notifications.LambdaDestination(alertLambda))
+    new cdk.CfnOutput(this, 'alert-lambda-arn', {
+      value: alertLambda.functionName,
+      exportName: 'alert-lambda-name-export'
+    })
 
   }
 }
