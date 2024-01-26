@@ -1,4 +1,5 @@
 import * as cdk from 'aws-cdk-lib';
+import { CfnPackage } from 'aws-cdk-lib/aws-panorama';
 import { EventType } from 'aws-cdk-lib/aws-s3';
 import { Construct } from 'constructs';
 // import * as sqs from 'aws-cdk-lib/aws-sqs';
@@ -7,14 +8,16 @@ export class ObjectAlertStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    
     const s3bucket = new cdk.aws_s3.Bucket(this, 'objectalerts3');
 
-    const snsObjectAlert = new cdk.aws_sns.Topic(this, 'objectalertid', {
-      topicName : 'ObjectSizeAlertTopic'
-    })
+    const snsObjectAlert = new cdk.aws_sns.Topic(this, 'objectalertid')
 
-    const emailAddress = new cdk.aws_sns_subscriptions.EmailSubscription('sp.aditya@gmail.com')
+    const emailParam = new cdk.CfnParameter(this, 'subemail', {
+      minLength: 10,
+      maxLength: 50,
+      type: 'String'
+    })
+    const emailAddress = new cdk.aws_sns_subscriptions.EmailSubscription(emailParam.valueAsString)
 
     snsObjectAlert.addSubscription(emailAddress)
 
